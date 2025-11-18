@@ -14,7 +14,7 @@ spring:
             cors-configurations:
               '[/**]':
                 allowedOrigins:
-                  - 'http://localhost:3000'
+                  - 'https://tictactalk.studio'
                 allowedMethods: '*'
                 allowedHeaders: '*'
                 allowCredentials: true
