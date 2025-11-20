@@ -2,6 +2,7 @@ package com.khi.ragservice.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.khi.ragservice.dto.ChatMessageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,9 @@ public class RagService {
     private final DataSource dataSource;
     private final ObjectMapper objectMapper;
 
-    public String getRagResponse(String body) {
+    public String getRagResponse(List<ChatMessageDto> chatMessages) {
         final int K = 5;
-        final String queryText = toUtteranceString(body).trim();
+        final String queryText = toUtteranceString(chatMessages).trim();
         final long t0 = System.nanoTime();
         log.info("[RAG] start (sparse) | K={} | q.len={}", K, queryText.length());
 
@@ -106,34 +107,14 @@ public class RagService {
         return items;
     }
 
-    private String toUtteranceString(String body) {
-        if (body == null || body.isBlank()) return "";
-        try {
-            JsonNode root = objectMapper.readTree(body);
-
-            if (root.isArray()) {
-                StringBuilder sb = new StringBuilder();
-                for (JsonNode n : root) {
-                    String speaker = n.path("speaker").asText("");
-                    String msg = n.path("message").asText("");
-                    if (speaker.isEmpty() && msg.isEmpty()) continue;
-                    if (sb.length() > 0) sb.append(' ');
-                    if (!speaker.isEmpty()) sb.append(speaker).append(": ");
-                    sb.append(msg);
-                }
-                String merged = sb.toString().trim();
-                if (!merged.isEmpty()) return merged;
-            }
-
-            if (root.isTextual()) {
-                String text = root.asText();
-                return text == null ? "" : text.trim();
-            }
-
-            return body;
-        } catch (Exception ignore) {
-            return body;
+    private String toUtteranceString(List<ChatMessageDto> chatMessages) {
+        if (chatMessages == null || chatMessages.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        for (ChatMessageDto msg : chatMessages) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(msg.getName()).append(": ").append(msg.getMessage());
         }
+        return sb.toString();
     }
 
     private void ensureTrgmReady(DataSource ds) {
