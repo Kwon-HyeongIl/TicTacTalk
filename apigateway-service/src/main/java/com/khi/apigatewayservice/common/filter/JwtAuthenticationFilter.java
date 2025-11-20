@@ -42,6 +42,8 @@ public class JwtAuthenticationFilter implements WebFilter {
             "/swagger-ui/swagger-initializer.js",
             "/v3/api-docs/swagger-config",
             "/security/test",
+            "/rag/receive",
+            "/rag/report",
             "/api/v1/voice/transcribe",
             "/api/v1/voice/callback",
             "/api/v1/rag/receive"
@@ -87,7 +89,7 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     private boolean isPublicPath(String path) {
         for (String publicPath : PUBLIC_PATHS) {
-            if (path.startsWith(publicPath)) {
+            if (path.contains(publicPath)) {
                 return true;
             }
         }
