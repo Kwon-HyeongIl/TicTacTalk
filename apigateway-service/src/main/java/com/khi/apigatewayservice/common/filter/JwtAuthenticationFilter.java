@@ -42,10 +42,14 @@ public class JwtAuthenticationFilter implements WebFilter {
             "/swagger-ui/swagger-initializer.js",
             "/v3/api-docs/swagger-config",
             "/security/test",
+            "/rag/receive",
+            "/security/test",
             "/rag/feign/receive",
             "/rag/report",
             "/api/v1/voice/transcribe",
-            "/api/v1/voice/callback"
+            "/api/v1/voice/callback",
+            "/oauth2/authorization/kakao",
+            "login/oauth2/code/kakao"
     };
 
     @Override

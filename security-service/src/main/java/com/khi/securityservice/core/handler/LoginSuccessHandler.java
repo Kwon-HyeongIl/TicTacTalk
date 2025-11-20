@@ -58,7 +58,7 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
         log.info("Redis에 Refresh 토큰 저장 완료");
 
-        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:3000/")
+        String targetUrl = UriComponentsBuilder.fromUriString("https://tictactalk.studio/")
                 .queryParam("Access-Token", accessToken)
                 .build()
                 .toUriString();
