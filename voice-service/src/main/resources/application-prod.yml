@@ -7,7 +7,7 @@ spring:
     name: voice-service
 
   rag-service:
-    receive-url: https://tictactalk.studio/api/v1/rag/receive
+    receive-url: https://tictactalk.studio/api/v1/rag/feign/receive
 
 eureka:
   client:

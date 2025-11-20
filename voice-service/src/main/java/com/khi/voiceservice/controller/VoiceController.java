@@ -4,6 +4,7 @@ import com.khi.voiceservice.client.ClovaSpeechClient;
 import com.khi.voiceservice.client.RagServiceClient;
 import com.khi.voiceservice.service.ClovaCallbackService;
 import com.khi.voiceservice.service.NcpStorageService;
+import com.khi.voiceservice.common.annotation.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +40,10 @@ public class VoiceController {
     }
 
     @PostMapping("/callback")
-    public ResponseEntity<Void> clovaCallback(@RequestBody String resultJson) {
+    public ResponseEntity<Void> clovaCallback(
+            @CurrentUser String userId,
+            @RequestBody String resultJson
+    ) {
         log.info("클로바로부터 clovaCallback 호출");
 
         try {
@@ -47,6 +51,7 @@ public class VoiceController {
 
             String response = ragServiceClient.passScriptToRagService(transcript);
 
+            log.info("[GPT RESULT] response: " + response);
             //TODO: 최종 결과물(response) 저장
 
             return ResponseEntity.ok().build();
