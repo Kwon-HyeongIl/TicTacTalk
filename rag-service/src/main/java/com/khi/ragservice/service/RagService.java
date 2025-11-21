@@ -80,6 +80,10 @@ public class RagService {
             gptInput.put("conversation_text", queryText);
             gptInput.put("rag_items", items);
 
+            // Log RAG search results before sending to GPT
+            log.info("[RAG] GPT Input - conversation_text: {}", queryText);
+            log.info("[RAG] GPT Input - rag_items: {}", items);
+
             String inputJson = objectMapper.writeValueAsString(gptInput);
             String gptResponseJson = gptService.generateReport(inputJson);
 
