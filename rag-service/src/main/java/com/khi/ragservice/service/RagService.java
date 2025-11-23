@@ -87,25 +87,35 @@ public class RagService {
             String inputJson = objectMapper.writeValueAsString(gptInput);
             String gptResponseJson = gptService.generateReport(inputJson);
 
-            // Parse GPT response into List<ReportCardDto>
+            // Parse GPT response
+            @SuppressWarnings("unchecked")
+            Map<String, Object> gptResponse = objectMapper.readValue(gptResponseJson,
+                    objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
+            String reportTitle = (String) gptResponse.get("report_title");
+
+            List<Map<String, Object>> reportCardsRaw = (List<Map<String, Object>>) gptResponse.get("report_cards");
+            String reportCardsJson = objectMapper.writeValueAsString(reportCardsRaw);
             List<ReportCardDto> reportCards = objectMapper.readValue(
-                    gptResponseJson,
+                    reportCardsJson,
                     objectMapper.getTypeFactory().constructCollectionType(List.class, ReportCardDto.class));
 
             // Save to database
             ConversationReport entity = new ConversationReport();
             entity.setUser1Id(user1Id);
             entity.setUser2Id(user2Id);
+            entity.setTitle(reportTitle);
             entity.setChatData(chatMessages);
             entity.setReportCards(reportCards);
             ConversationReport savedEntity = conversationReportRepository.save(entity);
 
-            log.info("[RAG] Saved response to database for user1Id: {}, user2Id: {}", user1Id, user2Id);
+            log.info("[RAG] Saved response to database for user1Id: {}, user2Id: {}, title: {}",
+                    user1Id, user2Id, reportTitle);
 
             return new ReportSummaryDto(
                     savedEntity.getId(),
                     savedEntity.getUser1Id(),
                     savedEntity.getUser2Id(),
+                    savedEntity.getTitle(),
                     savedEntity.getChatData(),
                     savedEntity.getReportCards(),
                     savedEntity.getCreatedAt());

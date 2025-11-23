@@ -29,6 +29,9 @@ public class ConversationReport {
     @Column(name = "user2_id", nullable = false)
     private String user2Id;
 
+    @Column(name = "title")
+    private String title;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "chat_data", columnDefinition = "jsonb", nullable = false)
     private List<ChatMessageDto> chatData;

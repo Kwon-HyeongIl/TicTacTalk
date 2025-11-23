@@ -10,6 +10,5 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserReportsDto {
-    private String userId;
-    private List<ReportSummaryDto> reports;
+    private List<ReportTitleDto> reports;
 }
