@@ -38,7 +38,7 @@ public class ClovaCallbackService {
 
         RagRequestDto requestDto = new RagRequestDto();
         // TODO: User 생성 시 임의값 제거
-        requestDto.setUserId(1L);
+        requestDto.setUserId("test_user_id");
         requestDto.setChatData(chatList);
 
         log.info("[Clova Result] {}", requestDto);
