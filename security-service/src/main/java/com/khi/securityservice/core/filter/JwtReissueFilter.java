@@ -34,11 +34,13 @@ public class JwtReissueFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 
-        return !(request.getRequestURI().equals("/security/jwt/reissue") && "POST".equalsIgnoreCase(request.getMethod()));
+        return !(request.getRequestURI().equals("/security/jwt/reissue")
+                && "POST".equalsIgnoreCase(request.getMethod()));
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
         log.info("JwtReissueFilter 실행");
 
@@ -125,8 +127,8 @@ public class JwtReissueFilter extends OncePerRequestFilter {
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
-        //cookie.setSecure(true);
+        cookie.setMaxAge(24 * 60 * 60);
+        cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
 
