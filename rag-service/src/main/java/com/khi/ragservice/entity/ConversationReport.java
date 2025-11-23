@@ -13,30 +13,36 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "rag_responses")
+@Table(name = "conversation_reports")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RagResponseEntity {
-    
+public class ConversationReport {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
-    
+
+    @Column(name = "user1_id", nullable = false)
+    private String user1Id;
+
+    @Column(name = "user2_id", nullable = false)
+    private String user2Id;
+
+    @Column(name = "title")
+    private String title;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "chat_data", columnDefinition = "jsonb", nullable = false)
     private List<ChatMessageDto> chatData;
-    
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "report_cards", columnDefinition = "jsonb", nullable = false)
     private List<ReportCardDto> reportCards;
-    
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

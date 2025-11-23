@@ -1,4 +1,4 @@
-package com.khi.securityservice.common.api;
+package com.khi.ragservice.common.api;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,16 +21,14 @@ public class ApiResponse<T> {
 
     private final T data;
 
-    private final String errorCode;
-
     /* 데이터가 있는 성공 응답 */
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(ResponseStatus.SUCCESS, "요청이 정상적으로 처리되었습니다.", data, null);
+        return new ApiResponse<>(ResponseStatus.SUCCESS, "요청이 정상적으로 처리되었습니다.", data);
     }
 
     /* 데이터가 없는 성공 응답 */
     public static ApiResponse<?> success() {
-        return new ApiResponse<>(ResponseStatus.SUCCESS, "요청이 정상적으로 처리되었습니다.", null, null);
+        return new ApiResponse<>(ResponseStatus.SUCCESS, "요청이 정상적으로 처리되었습니다.", null);
     }
 
     /* 검증 실패 응답 */
@@ -45,16 +43,11 @@ public class ApiResponse<T> {
                 errors.put(error.getObjectName(), error.getDefaultMessage());
             }
         }
-        return new ApiResponse<>(ResponseStatus.FAILURE, "요청 값이 유효하지 않습니다.", errors, null);
+        return new ApiResponse<>(ResponseStatus.FAILURE, "요청 값이 유효하지 않습니다.", errors);
     }
 
     /* 예외·비즈니스 오류 응답 */
     public static ApiResponse<?> error(String message) {
-        return new ApiResponse<>(ResponseStatus.ERROR, message, null, null);
-    }
-
-    /* 예외·비즈니스 오류 응답 with errorCode */
-    public static ApiResponse<?> error(String message, String errorCode) {
-        return new ApiResponse<>(ResponseStatus.ERROR, message, null, errorCode);
+        return new ApiResponse<>(ResponseStatus.ERROR, message, null);
     }
 }

@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)  // 로깅 필터 다음에 실행
+@Order(Ordered.HIGHEST_PRECEDENCE + 1) // 로깅 필터 다음에 실행
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter implements WebFilter {
 
@@ -42,8 +42,8 @@ public class JwtAuthenticationFilter implements WebFilter {
             "/swagger-ui/swagger-initializer.js",
             "/v3/api-docs/swagger-config",
             "/security/test",
-            "/rag/receive",
-            "/rag/report",
+            "/rag/feign/receive",
+            "/reports",
             "/api/v1/voice/transcribe",
             "/api/v1/voice/callback",
             "/api/v1/rag/feign/receive"
@@ -116,17 +116,14 @@ public class JwtAuthenticationFilter implements WebFilter {
             String errorJson = objectMapper.writeValueAsString(apiResponse);
 
             return response.writeWith(
-                    Mono.just(response.bufferFactory().wrap(errorJson.getBytes()))
-            );
+                    Mono.just(response.bufferFactory().wrap(errorJson.getBytes())));
         } catch (JsonProcessingException e) {
             log.error("[JSON PROCESSING ERROR] {}", e.getMessage());
             String fallbackJson = String.format(
                     "{\"status\":\"error\",\"message\":\"%s\",\"data\":null}",
-                    message
-            );
+                    message);
             return response.writeWith(
-                    Mono.just(response.bufferFactory().wrap(fallbackJson.getBytes()))
-            );
+                    Mono.just(response.bufferFactory().wrap(fallbackJson.getBytes())));
         }
     }
 }
