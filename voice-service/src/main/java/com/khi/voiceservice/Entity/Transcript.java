@@ -21,10 +21,10 @@ public class Transcript {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = true)
     private String userId;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "chat_data", columnDefinition = "jsonb", nullable = false)
+    @Column(name = "chat_data", columnDefinition = "jsonb", nullable = true)
     private List<ChatMessageDto> chatData;
 }

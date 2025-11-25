@@ -1,14 +1,13 @@
 spring:
-  config:
-    activate:
-      on-profile: local
+  profiles:
+    active: local
 
   application:
     name: voice-service
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://postgres:5432/rag
+    url: jdbc:postgresql://postgres:5432/voice
     username: root
     password: ${DB-PASSWORD}
 
@@ -22,10 +21,9 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://eureka-service:8761/eureka/
+#eureka:
+#  client:
+#    enabled: false
 
 ncp:
   access-key: ${NCP-ACCESS-KEY}
