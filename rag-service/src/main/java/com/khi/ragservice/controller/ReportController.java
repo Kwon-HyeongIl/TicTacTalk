@@ -36,7 +36,7 @@ public class ReportController {
         return ApiResponse.success(reports);
     }
 
-    @Operation(summary = "대화 분석 결과 보고서 조회", description = "저장된 대화 분석 결과 보고서를 보고서 id로 단건 조회.")
+    @Operation(summary = "대화 분석 결과 보고서 단건 조회", description = "저장된 대화 분석 결과 보고서를 보고서 id로 단건 조회.")
     @GetMapping("/report/{id}")
     public ApiResponse<ReportSummaryDto> getReportById(@PathVariable Long id) {
 

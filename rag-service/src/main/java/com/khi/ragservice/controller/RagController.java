@@ -19,7 +19,7 @@ public class RagController {
 
     private final RagService ragService;
 
-    @Operation(summary = "음성 텍스트를 수신하여 RAG 응답 생성", description = "Voice-Service, Chat-Service 등 다른 모듈에서 전달된 음성 인식 텍스트를 바탕으로 감정 분석을 수행하고 RAG 응답을 반환.")
+    @Operation(summary = "음성 텍스트를 수신하여 RAG 응답 생성 (프론트 사용 X)", description = "Voice-Service, Chat-Service 등 다른 모듈에서 전달된 음성 인식 텍스트를 바탕으로 감정 분석을 수행하고 RAG 응답을 반환. 프론트에서는 사용하지 않는 API")
     @PostMapping("/feign/receive")
     public ReportSummaryDto analyzeChatConversation(@RequestBody RagRequestDto requestDto) {
 
