@@ -1,0 +1,389 @@
+name: Build and Deploy Microservices
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'chat-service/**'
+      - 'apigateway-service/**'
+      - 'security-service/**'
+      - 'voice-service/**'
+      - 'rag-service/**'
+
+jobs:
+  detect-changes:
+    runs-on: self-hosted
+    outputs:
+      chat: ${{ steps.filter.outputs.chat }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+      security: ${{ steps.filter.outputs.security }}
+      voice: ${{ steps.filter.outputs.voice }}
+      rag: ${{ steps.filter.outputs.rag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed services
+        id: filter
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          echo ""
+          
+          if echo "$CHANGED_FILES" | grep -q "^chat-service/"; then
+            echo "chat=true" >> $GITHUB_OUTPUT
+            echo "✅ Chat service changed"
+          else
+            echo "chat=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q "^apigateway-service/"; then
+            echo "gateway=true" >> $GITHUB_OUTPUT
+            echo "✅ Gateway service changed"
+          else
+            echo "gateway=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q "^security-service/"; then
+            echo "security=true" >> $GITHUB_OUTPUT
+            echo "✅ Security service changed"
+          else
+            echo "security=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q "^voice-service/"; then
+            echo "voice=true" >> $GITHUB_OUTPUT
+            echo "✅ Voice service changed"
+          else
+            echo "voice=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q "^rag-service/"; then
+            echo "rag=true" >> $GITHUB_OUTPUT
+            echo "✅ RAG service changed"
+          else
+            echo "rag=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Chat Service
+  build-chat:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.chat == 'true'
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build Chat Service
+        working-directory: ./chat-service
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean bootJar -x test -Pprofile=prod
+
+      - name: Build Docker image
+        working-directory: ./chat-service
+        run: |
+          docker build \
+            --build-arg PROFILE=prod \
+            --target prod \
+            -t leesy010504/ttt-chat:${{ github.sha }} \
+            -t leesy010504/ttt-chat:latest \
+            .
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | \
+            docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Push Docker image
+        run: |
+          docker push leesy010504/ttt-chat:${{ github.sha }}
+          docker push leesy010504/ttt-chat:latest
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/chat-deployment \
+            chat=leesy010504/ttt-chat:${{ github.sha }} \
+            -n prod
+          
+          kubectl rollout status deployment/chat-deployment -n prod --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          echo "=== Chat Service Deployment ==="
+          kubectl get pods -n prod -l app=chat
+          kubectl logs -n prod -l app=chat --tail=20
+
+  # Gateway Service
+  build-gateway:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.gateway == 'true'
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build Gateway Service
+        working-directory: ./apigateway-service
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean bootJar -x test -Pprofile=prod
+
+      - name: Build Docker image
+        working-directory: ./apigateway-service
+        run: |
+          docker build \
+            --build-arg PROFILE=prod \
+            --target prod \
+            -t leesy010504/ttt-gateway:${{ github.sha }} \
+            -t leesy010504/ttt-gateway:latest \
+            .
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | \
+            docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Push Docker image
+        run: |
+          docker push leesy010504/ttt-gateway:${{ github.sha }}
+          docker push leesy010504/ttt-gateway:latest
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/gateway-deployment \
+            gateway=leesy010504/ttt-gateway:${{ github.sha }} \
+            -n prod
+          
+          kubectl rollout status deployment/gateway-deployment -n prod --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          echo "=== Gateway Service Deployment ==="
+          kubectl get pods -n prod -l app=gateway
+          kubectl logs -n prod -l app=gateway --tail=20
+
+  # Security Service
+  build-security:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.security == 'true'
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build Security Service
+        working-directory: ./security-service
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean bootJar -x test -Pprofile=prod
+
+      - name: Build Docker image
+        working-directory: ./security-service
+        run: |
+          docker build \
+            --build-arg PROFILE=prod \
+            --target prod \
+            -t leesy010504/ttt-security:${{ github.sha }} \
+            -t leesy010504/ttt-security:latest \
+            .
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | \
+            docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Push Docker image
+        run: |
+          docker push leesy010504/ttt-security:${{ github.sha }}
+          docker push leesy010504/ttt-security:latest
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/security-deployment \
+            security=leesy010504/ttt-security:${{ github.sha }} \
+            -n prod
+          
+          kubectl rollout status deployment/security-deployment -n prod --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          echo "=== Security Service Deployment ==="
+          kubectl get pods -n prod -l app=security
+          kubectl logs -n prod -l app=security --tail=20
+
+  # Voice Service
+  build-voice:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.voice == 'true'
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build Voice Service
+        working-directory: ./voice-service
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean bootJar -x test -Pprofile=prod
+
+      - name: Build Docker image
+        working-directory: ./voice-service
+        run: |
+          docker build \
+            --build-arg PROFILE=prod \
+            --target prod \
+            -t leesy010504/ttt-voice:${{ github.sha }} \
+            -t leesy010504/ttt-voice:latest \
+            .
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | \
+            docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Push Docker image
+        run: |
+          docker push leesy010504/ttt-voice:${{ github.sha }}
+          docker push leesy010504/ttt-voice:latest
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/voice-deployment \
+            voice=leesy010504/ttt-voice:${{ github.sha }} \
+            -n prod
+          
+          kubectl rollout status deployment/voice-deployment -n prod --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          echo "=== Voice Service Deployment ==="
+          kubectl get pods -n prod -l app=voice
+          kubectl logs -n prod -l app=voice --tail=20
+
+  # RAG Service
+  build-rag:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.rag == 'true'
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build RAG Service
+        working-directory: ./rag-service
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean bootJar -x test -Pprofile=prod
+
+      - name: Build Docker image
+        working-directory: ./rag-service
+        run: |
+          docker build \
+            --build-arg PROFILE=prod \
+            --target prod \
+            -t leesy010504/ttt-rag:${{ github.sha }} \
+            -t leesy010504/ttt-rag:latest \
+            .
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | \
+            docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Push Docker image
+        run: |
+          docker push leesy010504/ttt-rag:${{ github.sha }}
+          docker push leesy010504/ttt-rag:latest
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/rag-deployment \
+            rag=leesy010504/ttt-rag:${{ github.sha }} \
+            -n prod
+          
+          kubectl rollout status deployment/rag-deployment -n prod --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          echo "=== RAG Service Deployment ==="
+          kubectl get pods -n prod -l app=rag
+          kubectl logs -n prod -l app=rag --tail=20
+
+  # 배포 완료 알림
+  notify:
+    needs: [detect-changes, build-chat, build-gateway, build-security, build-voice, build-rag]
+    if: always()
+    runs-on: self-hosted
+
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "=========================================="
+          echo "         Deployment Summary"
+          echo "=========================================="
+          echo ""
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Author: ${{ github.actor }}"
+          echo ""
+          echo "Changed Services:"
+          echo "  Chat:     ${{ needs.detect-changes.outputs.chat }}"
+          echo "  Gateway:  ${{ needs.detect-changes.outputs.gateway }}"
+          echo "  Security: ${{ needs.detect-changes.outputs.security }}"
+          echo "  Voice:    ${{ needs.detect-changes.outputs.voice }}"
+          echo "  RAG:      ${{ needs.detect-changes.outputs.rag }}"
+          echo ""
+          echo "Deployment Status:"
+          echo "  Chat:     ${{ needs.build-chat.result }}"
+          echo "  Gateway:  ${{ needs.build-gateway.result }}"
+          echo "  Security: ${{ needs.build-security.result }}"
+          echo "  Voice:    ${{ needs.build-voice.result }}"
+          echo "  RAG:      ${{ needs.build-rag.result }}"
+          echo ""
+          echo "=========================================="
