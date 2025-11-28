@@ -113,10 +113,17 @@ jobs:
           docker push leesy010504/ttt-chat:${{ github.sha }}
           docker push leesy010504/ttt-chat:latest
 
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
       - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/chat-deployment \
-            chat=leesy010504/ttt-chat:${{ github.sha }} \
+            chat-container=leesy010504/ttt-chat:${{ github.sha }} \
             -n prod
           
           kubectl rollout status deployment/chat-deployment -n prod --timeout=5m
@@ -124,8 +131,8 @@ jobs:
       - name: Verify deployment
         run: |
           echo "=== Chat Service Deployment ==="
-          kubectl get pods -n prod -l app=chat
-          kubectl logs -n prod -l app=chat --tail=20
+          kubectl get pods -n prod -l app=chat-service
+          kubectl logs -n prod -l app=chat-service --tail=20
 
   # Gateway Service
   build-gateway:
@@ -170,10 +177,17 @@ jobs:
           docker push leesy010504/ttt-gateway:${{ github.sha }}
           docker push leesy010504/ttt-gateway:latest
 
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
       - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/gateway-deployment \
-            gateway=leesy010504/ttt-gateway:${{ github.sha }} \
+            gateway-container=leesy010504/ttt-gateway:${{ github.sha }} \
             -n prod
           
           kubectl rollout status deployment/gateway-deployment -n prod --timeout=5m
@@ -181,8 +195,8 @@ jobs:
       - name: Verify deployment
         run: |
           echo "=== Gateway Service Deployment ==="
-          kubectl get pods -n prod -l app=gateway
-          kubectl logs -n prod -l app=gateway --tail=20
+          kubectl get pods -n prod -l app=gateway-service
+          kubectl logs -n prod -l app=gateway-service --tail=20
 
   # Security Service
   build-security:
@@ -227,10 +241,17 @@ jobs:
           docker push leesy010504/ttt-security:${{ github.sha }}
           docker push leesy010504/ttt-security:latest
 
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
       - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/security-deployment \
-            security=leesy010504/ttt-security:${{ github.sha }} \
+            security-container=leesy010504/ttt-security:${{ github.sha }} \
             -n prod
           
           kubectl rollout status deployment/security-deployment -n prod --timeout=5m
@@ -238,8 +259,8 @@ jobs:
       - name: Verify deployment
         run: |
           echo "=== Security Service Deployment ==="
-          kubectl get pods -n prod -l app=security
-          kubectl logs -n prod -l app=security --tail=20
+          kubectl get pods -n prod -l app=security-service
+          kubectl logs -n prod -l app=security-service --tail=20
 
   # Voice Service
   build-voice:
@@ -284,10 +305,17 @@ jobs:
           docker push leesy010504/ttt-voice:${{ github.sha }}
           docker push leesy010504/ttt-voice:latest
 
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
       - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/voice-deployment \
-            voice=leesy010504/ttt-voice:${{ github.sha }} \
+            voice-container=leesy010504/ttt-voice:${{ github.sha }} \
             -n prod
           
           kubectl rollout status deployment/voice-deployment -n prod --timeout=5m
@@ -295,8 +323,8 @@ jobs:
       - name: Verify deployment
         run: |
           echo "=== Voice Service Deployment ==="
-          kubectl get pods -n prod -l app=voice
-          kubectl logs -n prod -l app=voice --tail=20
+          kubectl get pods -n prod -l app=voice-service
+          kubectl logs -n prod -l app=voice-service --tail=20
 
   # RAG Service
   build-rag:
@@ -341,10 +369,17 @@ jobs:
           docker push leesy010504/ttt-rag:${{ github.sha }}
           docker push leesy010504/ttt-rag:latest
 
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
       - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/rag-deployment \
-            rag=leesy010504/ttt-rag:${{ github.sha }} \
+            rag-container=leesy010504/ttt-rag:${{ github.sha }} \
             -n prod
           
           kubectl rollout status deployment/rag-deployment -n prod --timeout=5m
@@ -352,8 +387,8 @@ jobs:
       - name: Verify deployment
         run: |
           echo "=== RAG Service Deployment ==="
-          kubectl get pods -n prod -l app=rag
-          kubectl logs -n prod -l app=rag --tail=20
+          kubectl get pods -n prod -l app=rag-service
+          kubectl logs -n prod -l app=rag-service --tail=20
 
   # 배포 완료 알림
   notify:
