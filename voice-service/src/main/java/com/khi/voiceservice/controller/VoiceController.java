@@ -3,7 +3,7 @@ package com.khi.voiceservice.controller;
 import com.khi.voiceservice.Entity.Transcript;
 import com.khi.voiceservice.client.ClovaSpeechClient;
 import com.khi.voiceservice.client.RagClient;
-import com.khi.voiceservice.common.annotation.CurrentUser;
+import com.khi.voiceservice.common.api.ApiResponse;
 import com.khi.voiceservice.dto.*;
 import com.khi.voiceservice.service.TranscriptService;
 import com.khi.voiceservice.service.NcpStorageService;
@@ -29,7 +29,7 @@ public class VoiceController {
     private String callbackUrl;
 
     @PostMapping("/transcribe")
-    public ResponseEntity<VoiceResponseDto> transcribe(
+    public ResponseEntity<ApiResponse<VoiceResponseDto>> transcribe(
             @RequestHeader("X-User-Id") String userId,
             @RequestPart("file")MultipartFile voiceFile
     ) {
@@ -41,7 +41,7 @@ public class VoiceController {
 
         clovaSpeechClient.asyncRecognize(fileUrl, callbackUrl, transcriptId);
 
-        return ResponseEntity.ok(voiceResponseDto);
+        return ResponseEntity.ok(ApiResponse.success(voiceResponseDto));
     }
 
     // 전사 결과 전달 받는 콜백
