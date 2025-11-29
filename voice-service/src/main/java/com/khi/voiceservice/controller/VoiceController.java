@@ -3,6 +3,7 @@ package com.khi.voiceservice.controller;
 import com.khi.voiceservice.Entity.Transcript;
 import com.khi.voiceservice.client.ClovaSpeechClient;
 import com.khi.voiceservice.client.RagClient;
+import com.khi.voiceservice.common.annotation.CurrentUser;
 import com.khi.voiceservice.dto.*;
 import com.khi.voiceservice.service.TranscriptService;
 import com.khi.voiceservice.service.NcpStorageService;
@@ -29,12 +30,12 @@ public class VoiceController {
 
     @PostMapping("/transcribe")
     public ResponseEntity<VoiceResponseDto> transcribe(
-            @RequestPart("userdata") UserPairRequest userPairRequest,
+            @CurrentUser String userId,
             @RequestPart("file")MultipartFile voiceFile
     ) {
         String fileUrl = ncpStorageService.uploadFile(voiceFile);
 
-        Long transcriptId = transcriptService.getTranscriptId(userPairRequest);
+        Long transcriptId = transcriptService.getTranscriptId(userId);
         VoiceResponseDto voiceResponseDto = new VoiceResponseDto();
         voiceResponseDto.setTranscriptId(transcriptId);
 

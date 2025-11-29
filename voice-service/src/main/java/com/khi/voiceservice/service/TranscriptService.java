@@ -21,10 +21,9 @@ public class TranscriptService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public Long getTranscriptId(UserPairRequest userPairRequest) {
+    public Long getTranscriptId(String userId) {
         Transcript transcript = new Transcript();
-        transcript.setUser1Id(userPairRequest.getUser1Id());
-        transcript.setUser2Id(userPairRequest.getUser2Id());
+        transcript.setUserId(userId);
         transcriptRepository.save(transcript);
 
         return transcript.getId();
@@ -70,8 +69,9 @@ public class TranscriptService {
     // RagRequestDto로 변환
     public RagRequestDto getRagRequestDto(Transcript transcript) {
         RagRequestDto ragRequestDto = new RagRequestDto();
-        ragRequestDto.setUser1Id(transcript.getUser1Id());
-        ragRequestDto.setUser2Id(transcript.getUser2Id());
+        // TODO: 임의 유저 라벨 A, B
+        ragRequestDto.setUser1Id("A");
+        ragRequestDto.setUser2Id("B");
         ragRequestDto.setChatData(transcript.getChatData());
 
         return ragRequestDto;

@@ -20,11 +20,8 @@ public class Transcript {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_1_id", nullable = false)
-    private String user1Id;
-
-    @Column(name = "user_2_id", nullable = false)
-    private String user2Id;
+    @Column(name = "user_id", nullable = false)
+    private String userId;
 
     // Rag 분석 요청 여부 (중복 요청 방지)
     @Column(name = "clova_processed")
