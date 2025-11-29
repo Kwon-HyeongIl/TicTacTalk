@@ -16,18 +16,24 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Transcript {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = true)
-    private String userId;
+    @Column(name = "user_1_id", nullable = false)
+    private String user1Id;
+
+    @Column(name = "user_2_id", nullable = false)
+    private String user2Id;
+
+    // Rag 분석 요청 여부 (중복 요청 방지)
+    @Column(name = "rag_processed")
+    private boolean ragProcessed;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "chat_data", columnDefinition = "jsonb", nullable = true)
     private List<ChatMessageDto> chatData;
 
-    @Column(name = "rag_processed")
-    private boolean ragProcessed;
+    @Column(name = "conversation_report_id", nullable = true)
+    private Long conversationReportId;
 }

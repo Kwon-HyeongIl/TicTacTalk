@@ -3,10 +3,7 @@ package com.khi.voiceservice.controller;
 import com.khi.voiceservice.Entity.Transcript;
 import com.khi.voiceservice.client.ClovaSpeechClient;
 import com.khi.voiceservice.client.RagClient;
-import com.khi.voiceservice.dto.ChatMessageDto;
-import com.khi.voiceservice.dto.RagRequestDto;
-import com.khi.voiceservice.dto.ReportSummaryDto;
-import com.khi.voiceservice.dto.UserPairRequest;
+import com.khi.voiceservice.dto.*;
 import com.khi.voiceservice.repository.TranscriptRepository;
 import com.khi.voiceservice.service.TranscriptService;
 import com.khi.voiceservice.service.NcpStorageService;
@@ -36,19 +33,19 @@ public class VoiceController {
     private String callbackUrl;
 
     @PostMapping("/transcribe")
-    public ResponseEntity<Long> transcribe(
-            @RequestPart("userdata") UserPairRequest requestDto,
+    public ResponseEntity<VoiceResponseDto> transcribe(
+            @RequestPart("userdata") UserPairRequest userPairRequest,
             @RequestPart("file")MultipartFile voiceFile
     ) {
         String fileUrl = ncpStorageService.uploadFile(voiceFile);
 
-        log.info("[Object Storage] fileUrl: " + fileUrl);
+        Long transcriptId = transcriptService.getTranscriptId(userPairRequest);
+        VoiceResponseDto voiceResponseDto = new VoiceResponseDto();
+        voiceResponseDto.setTranscribeId(transcriptId);
 
-        Long transcriptId = transcriptService.getTranscriptId();
-        // TODO: User 도메인 완성 후 아래줄 제거
-        clovaSpeechClient.asyncRecognize(fileUrl, callbackUrl, transcriptId, requestDto);
+        clovaSpeechClient.asyncRecognize(fileUrl, callbackUrl, transcriptId);
 
-        return ResponseEntity.ok(transcriptId);
+        return ResponseEntity.ok(voiceResponseDto);
     }
 
     // 전사 결과 전달 받는 콜백
@@ -74,8 +71,9 @@ public class VoiceController {
         }
         // Rag 분석 요청, 결과는 rag-service에서 저장
         ReportSummaryDto reportSummaryDto = ragClient.getRagResult(requestDto);
+        log.info("[Rag] 분석 완료");
 
-        log.info("[Rag] 분석 결과: " + reportSummaryDto);
+
 
         return ResponseEntity.ok().build();
     }
