@@ -65,18 +65,16 @@ public class TranscriptService {
 
         return transcript;
     }
-
     // RagRequestDto로 변환
     public RagRequestDto getRagRequestDto(Transcript transcript) {
         RagRequestDto ragRequestDto = new RagRequestDto();
-        // TODO: 임의 유저 라벨 A, B
-        ragRequestDto.setUser1Id("A");
-        ragRequestDto.setUser2Id("B");
+        ragRequestDto.setUser1Id(transcript.getUserId());
+        // TODO: 임의 유저 라벨 2
+        ragRequestDto.setUser2Id("2");
         ragRequestDto.setChatData(transcript.getChatData());
 
         return ragRequestDto;
     }
-
     // Transcript와 RagReport 매칭
     public void matchTranscriptAndReport(Transcript transcript, ReportSummaryDto reportSummaryDto) {
         transcript.setConversationReportId(reportSummaryDto.getId());
