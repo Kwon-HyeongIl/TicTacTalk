@@ -119,8 +119,10 @@ public class ChatController {
         @Operation(summary = "채팅방 생성", description = "상대 사용자와 1:1 채팅방을 생성합니다.")
         @PostMapping("/room")
         public ApiResponse<CreateRoomRes> makeRoom(
-                @CurrentUser String userId
+                // @CurrentUser String userId
+                @RequestHeader("X-User-Id") String userId
         ){
+            log.info("[CHAT-SERVICE] Received X-User-Id header: {} for POST /room", userId);
             List<String> userIds = new ArrayList<>();
             userIds.add(userId);
 
@@ -143,10 +145,12 @@ public class ChatController {
         @Operation(summary = "채팅방 읽음 처리", description = "지정한 메시지까지 읽음 처리합니다.")
         @PutMapping("/rooms/{roomId}/read")
         public ApiResponse<?> markRoomAsRead(
-                @CurrentUser String userId,
+                // @CurrentUser String userId,
+                @RequestHeader("X-User-Id") String userId,
                 @PathVariable String roomId,
                 @RequestBody MarkAsReadReq request
         ) {
+            log.info("[CHAT-SERVICE] Received X-User-Id header: {} for PUT /rooms/{}/read", userId, roomId);
             Long roomIdLong = chatService.getRoomIdByUuid(roomId);
             chatService.markRoomAsRead(roomIdLong, userId, request.lastReadMessageId());
             eventBroadcaster.broadcastMessageRead(roomId, request.lastReadMessageId());
@@ -167,8 +171,10 @@ public class ChatController {
         @GetMapping("/rooms/{roomId}/messages")
         public ApiResponse<List<ChatMessageRes>> getAllMessagesByRoomUuid(
                 @PathVariable String roomId,
-                @CurrentUser String userId
+                // @CurrentUser String userId
+                @RequestHeader("X-User-Id") String userId
         ) {
+            log.info("[CHAT-SERVICE] Received X-User-Id header: {} for GET /rooms/{}/messages", userId, roomId);
             String roomUuid = roomId;
             return ApiResponse.success(chatService.getAllMessagesByRoomUuid(roomUuid, userId));
         }
@@ -176,9 +182,11 @@ public class ChatController {
         @Operation(summary = "초대 링크 참가", description = "roomId를 통해 사용자를 채팅방에 참여시킵니다.")
         @PostMapping("/rooms/{roomId}/join")
         public ApiResponse<CreateRoomRes> joinRoomByUuid(
-                @CurrentUser String userId,
+                // @CurrentUser String userId,
+                @RequestHeader("X-User-Id") String userId,
                 @PathVariable String roomId
         ) {
+            log.info("[CHAT-SERVICE] Received X-User-Id header: {} for POST /rooms/{}/join", userId, roomId);
             CreateRoomRes res = chatService.joinRoomByUuid(roomId, userId);
             eventBroadcaster.broadcastUserJoined(roomId, userId);
             return ApiResponse.success(res);
@@ -188,8 +196,10 @@ public class ChatController {
         @PostMapping("/rooms/{roomId}/end")
         public ApiResponse<EndChatRes> endChatByUuid(
                 @PathVariable String roomId,
-                @CurrentUser String userId
+                // @CurrentUser String userId
+                @RequestHeader("X-User-Id") String userId
         ) {
+            log.info("[CHAT-SERVICE] Received X-User-Id header: {} for POST /rooms/{}/end", userId, roomId);
             String reportId = chatService.endChatByUuid(roomId, userId);
             eventBroadcaster.broadcastChatEndToAll(roomId, reportId);
             return ApiResponse.success(new EndChatRes(reportId));
