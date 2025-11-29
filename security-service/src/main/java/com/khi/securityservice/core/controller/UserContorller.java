@@ -1,6 +1,5 @@
 package com.khi.securityservice.core.controller;
 
-import com.khi.securityservice.core.controller.dto.UserProfileRequestDto;
 import com.khi.securityservice.core.controller.dto.UserProfileResponseDto;
 import com.khi.securityservice.core.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -32,15 +31,16 @@ public class UserContorller {
     }
 
     @PutMapping("/user/additional-info")
-    public ResponseEntity<UserProfileResponseDto> updateUserProfile(
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> updateUserProfile(
             @RequestHeader("X-User-Id") String userId,
             @RequestParam(required = false) String nickname,
             @RequestParam(required = false) MultipartFile image,
             @RequestParam boolean isProfileImageDeleted
     ) {
+
         UserProfileResponseDto userProfileResponseDto =
                 userService.updateUserProfile(userId, nickname, image, isProfileImageDeleted);
 
-        return ResponseEntity.ok(userProfileResponseDto);
+        return ResponseEntity.ok(ApiResponse.success(userProfileResponseDto));
     }
 }
