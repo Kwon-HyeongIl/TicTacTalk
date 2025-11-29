@@ -12,6 +12,6 @@ public class UserEntity {
     private Long id;
     private String uid;
     private String role;
-//    private String nickname;
-//    private String name;
+    private String nickname;
+    private String profileImgUrl;
 }

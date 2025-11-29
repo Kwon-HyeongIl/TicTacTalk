@@ -45,8 +45,12 @@ public class LoginService extends DefaultOAuth2UserService {
     private SecurityUserPrincipal kakaoOAuth2Process(OAuth2User authUser) {
 
         Map<String, Object> attributes = authUser.getAttributes();
-
         String authUid = attributes.get("id").toString();
+
+        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+        Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+        String nickname = (String) profile.get("nickname");
+        String profileImgUrl = (String) profile.get("profile_image_url");
 
         UserEntity existUser = userRepository.findByUid(authUid);
 
@@ -56,7 +60,8 @@ public class LoginService extends DefaultOAuth2UserService {
             UserEntity userEntity = new UserEntity();
             userEntity.setUid(authUid);
             userEntity.setRole("ROLE_USER");
-
+            userEntity.setNickname(nickname);
+            userEntity.setProfileImgUrl(profileImgUrl);
             userRepository.save(userEntity);
 
             log.info("회원가입 완료");

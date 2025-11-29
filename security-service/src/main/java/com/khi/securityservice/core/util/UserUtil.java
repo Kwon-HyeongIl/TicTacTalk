@@ -5,7 +5,6 @@ import com.khi.securityservice.core.entity.domain.UserEntity;
 import com.khi.securityservice.core.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
