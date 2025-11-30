@@ -1,7 +1,6 @@
 package com.khi.chatservice.presentation.dto.res;
 
 import com.khi.chatservice.domain.entity.ChatMessageEntity;
-import com.khi.chatservice.domain.entity.ChatMessageEntity;
 
 import java.time.LocalDateTime;
 
@@ -24,14 +23,14 @@ public record ChatMessageRes(
         );
     }
 
-    public static ChatMessageRes of(ChatMessageEntity entity, String senderNickname) {
+    public static ChatMessageRes of(ChatMessageEntity entity, String senderNickname, String currentUserId) {
         return new ChatMessageRes(
                 entity.getId(),
                 entity.getSenderId(),
                 senderNickname,
                 entity.getContent(),
                 entity.getSentAt(),
-                null
+                entity.getSenderId().equals(currentUserId)
         );
     }
 }

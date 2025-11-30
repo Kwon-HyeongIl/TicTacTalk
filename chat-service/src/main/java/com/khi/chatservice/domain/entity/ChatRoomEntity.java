@@ -28,7 +28,16 @@ public class ChatRoomEntity {
 
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
+
     @Builder.Default
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
     private List<ChatRoomParticipantEntity> participants = new ArrayList<>();
+
+    public void endChat() {
+        this.status = ChatRoomStatus.ENDED;
+    }
 }
