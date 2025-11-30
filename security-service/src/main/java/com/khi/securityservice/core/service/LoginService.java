@@ -20,6 +20,7 @@ import java.util.Map;
 public class LoginService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final NicknameService nicknameService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -51,9 +52,7 @@ public class LoginService extends DefaultOAuth2UserService {
 
         // 회원가입
         if (existUser == null) {
-            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
-            String nickname = (String) profile.get("nickname");
+            String nickname = nicknameService.generateRandomNickname();
 
             UserEntity userEntity = new UserEntity();
             userEntity.setUid(authUid);
