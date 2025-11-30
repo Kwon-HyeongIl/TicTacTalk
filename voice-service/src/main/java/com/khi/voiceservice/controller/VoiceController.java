@@ -39,7 +39,8 @@ public class VoiceController {
 
         Long transcriptId = transcriptService.getTranscriptId(userId);
         VoiceResponseDto voiceResponseDto = new VoiceResponseDto();
-        voiceResponseDto.setTranscriptId(transcriptId);
+        // 프론트 반환 시, transcriptId -> reportId
+        voiceResponseDto.setReportId(transcriptId);
 
         clovaSpeechClient.asyncRecognize(fileUrl, callbackUrl, transcriptId);
 
