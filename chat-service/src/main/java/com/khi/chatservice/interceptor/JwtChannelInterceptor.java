@@ -75,7 +75,8 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                 throw new IllegalArgumentException("유효하지 않은 사용자입니다.");
             }
 
-            Principal userPrincipal = () -> userId;
+            String finalUserId = userId;
+            Principal userPrincipal = () -> finalUserId;
             acc.setUser(userPrincipal);
 
             acc.getSessionAttributes().put("userId", userId);
