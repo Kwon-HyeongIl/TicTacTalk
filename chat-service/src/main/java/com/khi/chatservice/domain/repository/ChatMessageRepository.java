@@ -18,4 +18,6 @@ public interface ChatMessageRepository
     ChatMessageEntity findTopByRoomOrderBySentAtDesc(ChatRoomEntity room);
 
     int countByRoomIdAndIdGreaterThanAndSenderIdNot(Long id, Long lastReadMessageId, String userId);
+
+    void deleteByRoomId(Long roomId);
 }
