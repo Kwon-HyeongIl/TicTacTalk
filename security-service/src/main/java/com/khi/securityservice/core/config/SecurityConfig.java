@@ -88,6 +88,10 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/security/test").permitAll()
 
+                        /* API */
+                        .requestMatchers(HttpMethod.GET, "/security/user/profile").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/security/user/additional-info").permitAll()
+
                         /* Internal Feign API for chat-service */
                         .requestMatchers("/security/users/**").permitAll()
 
