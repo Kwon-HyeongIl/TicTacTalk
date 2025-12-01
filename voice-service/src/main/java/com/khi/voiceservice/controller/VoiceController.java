@@ -45,7 +45,7 @@ public class VoiceController {
         Long transcriptId = transcriptService.getTranscriptId(userId);
         VoiceResponseDto voiceResponse = new VoiceResponseDto(transcriptId);
 
-        clovaSpeechClient.asyncRecognize(fileUrl, callbackUrl, transcriptId);
+        clovaSpeechClient.asyncRecognize(fileUrl, callbackUrl, transcriptId, userId);
 
         return ResponseEntity.ok(ApiResponse.success(voiceResponse));
     }
@@ -56,9 +56,14 @@ public class VoiceController {
     public ResponseEntity<Void> clovaCallback(
             @RequestBody String resultJson
     ) {
-        Transcript transcript;
+        RagRequestDto ragRequestDto;
+        ClovaResultDto clovaResultDto;
         try {
-            transcript = transcriptService.processClovaResult(resultJson);
+             clovaResultDto = transcriptService.processClovaResult(resultJson);
+             // 이미 Rag 분석 요청이 된 객체인 경우
+             if (clovaResultDto == null) return ResponseEntity.ok().build();
+
+             ragRequestDto = new RagRequestDto(clovaResultDto.getUserId(), "opponent", clovaResultDto.getChatData());
         } catch (IllegalArgumentException e) {
             log.warn("[Clova] 콜백 파싱 실패: {}", e.getMessage());
 
@@ -68,16 +73,11 @@ public class VoiceController {
 
             return ResponseEntity.internalServerError().build();
         }
-
-        // 이미 분석 요청이 된 경우
-        if (transcript == null) return ResponseEntity.ok().build();
-
         // Rag 분석 요청
-        RagRequestDto ragRequest = new RagRequestDto("A", "B", transcript.getChatData());
-        ReportSummaryDto reportSummaryDto = ragClient.getRagResult(ragRequest);
+        ReportSummaryDto reportSummaryDto = ragClient.getRagResult(ragRequestDto);
 
         // RagReportId와 Transcript 엔티티 매칭
-        transcriptService.matchTranscriptAndReport(transcript, reportSummaryDto);
+        transcriptService.matchTranscriptAndReport(clovaResultDto.getTranscript(), reportSummaryDto);
 
         return ResponseEntity.ok().build();
     }

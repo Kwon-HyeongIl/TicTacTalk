@@ -42,7 +42,7 @@ public class ClovaSpeechClient {
     }
 
     // 클로바 전사 요청
-    public void asyncRecognize(String fileUrl, String callbackUrl, Long transcriptId) {
+    public void asyncRecognize(String fileUrl, String callbackUrl, Long transcriptId, String userId) {
         log.info("[Object Storage] fileUrl: " + fileUrl);
 
         HttpPost post = new HttpPost(invokeUrl + "/recognizer/url");
@@ -55,6 +55,7 @@ public class ClovaSpeechClient {
 
         Map<String, Object> userdataMap = new HashMap<>();
         userdataMap.put("transcriptId", transcriptId);
+        userdataMap.put("userId", userId);
         body.put("userdata", userdataMap);
 
         Map<String, Object> diarizationMap = new HashMap<>();

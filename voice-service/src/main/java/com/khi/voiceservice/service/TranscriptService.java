@@ -7,6 +7,7 @@ import com.khi.voiceservice.dto.*;
 import com.khi.voiceservice.repository.TranscriptRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class TranscriptService {
         return transcript.getId();
     }
     // 전사 결과를 transcript entity에 저장하고 transcript를 반환
-    public Transcript processClovaResult(String jsonResult) throws Exception {
+    public ClovaResultDto processClovaResult(String jsonResult) throws Exception {
         log.info("[Callback Raw JSON] {}", jsonResult);
 
         JsonNode root = objectMapper.readTree(jsonResult);
@@ -39,8 +40,10 @@ public class TranscriptService {
 
         // 요청 객체 확인, 이미 Rag 분석 요청된 객체라면 건너뜀
         Long transcriptId = userdataNode.path("transcriptId").asLong();
+        String userId = userdataNode.path("userId").asText();
         Transcript transcript = transcriptRepository.findById(transcriptId)
                 .orElseThrow(() -> new RuntimeException("Transcript Not found"));
+
         if (transcript.isClovaProcessed()) {
             log.info("[VOICE-SERVICE] 이미 rag 분석 요청된 객체입니다. 갱신 및 분석 요청을 건너뜁니다.");
             return null;
@@ -52,6 +55,7 @@ public class TranscriptService {
             String text = seg.path("text").asText("");
 
             ChatMessageDto dto = new ChatMessageDto();
+            dto.setUserId("temp");
             dto.setName(speaker);
             dto.setMessage(text);
 
@@ -63,10 +67,11 @@ public class TranscriptService {
         transcript.setClovaProcessed(true);
         transcriptRepository.save(transcript);
 
-        return transcript;
+        return new ClovaResultDto(transcript, userId, chatList);
     }
     // Transcript와 RagReport 매칭
     public void matchTranscriptAndReport(Transcript transcript, ReportSummaryDto reportSummaryDto) {
+
         transcript.setConversationReportId(reportSummaryDto.getId());
         transcriptRepository.save(transcript);
     }
