@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface ChatRoomReadStatusRepository extends JpaRepository<ChatRoomReadStatusEntity, Long> {
     Optional<ChatRoomReadStatusEntity> findByChatRoomAndUserId(ChatRoomEntity chatRoom, String userId);
+
+    void deleteByChatRoom(ChatRoomEntity chatRoom);
 } 

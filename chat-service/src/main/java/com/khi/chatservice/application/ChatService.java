@@ -10,6 +10,7 @@ import com.khi.chatservice.domain.entity.ChatMessageEntity;
 import com.khi.chatservice.domain.entity.ChatRoomEntity;
 import com.khi.chatservice.domain.entity.ChatRoomParticipantEntity;
 import com.khi.chatservice.domain.entity.ChatRoomReadStatusEntity;
+import com.khi.chatservice.domain.entity.ChatRoomStatus;
 import com.khi.chatservice.domain.repository.ChatMessageRepository;
 import com.khi.chatservice.domain.repository.ChatRoomParticipantRepository;
 import com.khi.chatservice.domain.repository.ChatRoomReadStatusRepository;
@@ -51,6 +52,7 @@ public class ChatService {
     @Transactional
     public ChatMessageEntity sendMessage(Long roomId, String senderId, String content) {
         ChatRoomEntity room = isExistChatRoom(roomId);
+        validateRoomIsActive(room);
 
         // 참여자가 아니면 자동으로 추가
         boolean alreadyParticipant = partRepo.findByRoomIdAndUserId(roomId, senderId)
@@ -95,12 +97,13 @@ public class ChatService {
         List<ChatMessageRes> messages = chats.stream()
                 .map(chat -> ChatMessageRes.of(
                         chat,
-                        userIdToNickname.get(chat.getSenderId())
+                        userIdToNickname.get(chat.getSenderId()),
+                        userId
                 ))
                 .toList();
 
         SliceInfo sliceInfo = SliceInfo.of(chatSlice.hasNext());
-        return ChatHistoryRes.of(chats, sliceInfo, userId, userIdToNickname);
+        return new ChatHistoryRes(sliceInfo, messages);
     }
 
     @Transactional
@@ -220,12 +223,18 @@ public class ChatService {
                 .orElseThrow(() -> new ApiException("chat room not found"));
     }
 
+    private void validateRoomIsActive(ChatRoomEntity room) {
+        if (room.getStatus() != ChatRoomStatus.ACTIVE) {
+            throw new ApiException("chat room is not active");
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<ChatMessageRes> getAllMessagesByRoomUuid(String roomUuid, String userId) {
         ChatRoomEntity room = roomRepo.findByRoomUuid(roomUuid)
                 .orElseThrow(() -> new ApiException("chat room not found"));
 
-        // 초대 링크로 접속한 사용자는 반드시 가입/로그인한 상태이므로 참여자가 아니면 에러
+        // 초대 링크로 접속한 사용자는 반드시 가입로그인한 상태이므로 참여자가 아니면 에러
         partRepo.findByRoomIdAndUserId(room.getId(), userId)
                 .orElseThrow(() -> new ApiException("user is not a participant of this chat room"));
 
@@ -250,7 +259,7 @@ public class ChatService {
         }
 
         return messages.stream()
-                .map(msg -> ChatMessageRes.of(msg, userIdToNickname.get(msg.getSenderId())))
+                .map(msg -> ChatMessageRes.of(msg, userIdToNickname.get(msg.getSenderId()), userId))
                 .toList();
     }
 
@@ -280,6 +289,10 @@ public class ChatService {
         partRepo.findByRoomIdAndUserId(room.getId(), userId)
                 .orElseThrow(() -> new ApiException("user is not a participant of this chat room"));
 
+        // 채팅방 상태를 ENDED로 변경
+        room.endChat();
+        roomRepo.save(room);
+
         String reportId = UUID.randomUUID().toString();
 
         log.info("Chat ended by UUID - roomUuid: {}, reportId: {}", roomUuid, reportId);
@@ -306,6 +319,7 @@ public class ChatService {
     public CreateRoomRes joinRoomByUuid(String roomUuid, String userId) {
         ChatRoomEntity room = roomRepo.findByRoomUuid(roomUuid)
                 .orElseThrow(() -> new ApiException("chat room not found"));
+        validateRoomIsActive(room);
 
         boolean exists = partRepo.findByRoomIdAndUserId(room.getId(), userId).isPresent();
         if (!exists) {
@@ -374,8 +388,38 @@ public class ChatService {
 
             log.info("RAG analysis completed for roomId: {}", roomId);
 
+            // RAG 분석 완료 후 채팅방 삭제
+            deleteChatRoom(roomId);
+
         } catch (Exception e) {
             log.error("Failed to analyze conversation for roomId: {}", roomId, e);
         }
+    }
+
+    @Transactional
+    public void deleteChatRoom(Long roomId) {
+        ChatRoomEntity room = roomRepo.findById(roomId)
+                .orElse(null);
+
+        if (room == null) {
+            log.warn("ChatRoom {} not found for deletion", roomId);
+            return;
+        }
+
+        log.info("Deleting chat room: {}", roomId);
+
+        // 1. 읽음 상태 삭제
+        readStatusRepo.deleteByChatRoom(room);
+
+        // 2. 메시지 삭제
+        msgRepo.deleteByRoomId(roomId);
+
+        // 3. 참여자 삭제
+        partRepo.deleteByRoomId(roomId);
+
+        // 4. 채팅방 삭제
+        roomRepo.delete(room);
+
+        log.info("ChatRoom {} deleted successfully", roomId);
     }
 }

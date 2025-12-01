@@ -26,9 +26,10 @@ public class UserService {
         UserEntity user = userRepository.findOptionalByUid(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User Not found"));
 
-
         if (nickname != null && !nickname.isBlank()) {
-            if (nickname.length() > NICKNAME_MAX_CHAR) {
+            String trimmed = nickname.trim();
+            int nicknameLen = trimmed.codePointCount(0, trimmed.length());
+            if (nicknameLen > NICKNAME_MAX_CHAR) {
                 throw new IllegalArgumentException("Nickname must be 6 characters or fewer");
             }
             user.setNickname(nickname);

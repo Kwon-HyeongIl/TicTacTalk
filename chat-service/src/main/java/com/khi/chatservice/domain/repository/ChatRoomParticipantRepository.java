@@ -16,4 +16,6 @@ public interface ChatRoomParticipantRepository
     Page<ChatRoomParticipantEntity> findByUserId(String userId, Pageable pageable);
 
     Optional<ChatRoomParticipantEntity> findByRoomIdAndUserId(Long roomId, String userId);
+
+    void deleteByRoomId(Long roomId);
 }
