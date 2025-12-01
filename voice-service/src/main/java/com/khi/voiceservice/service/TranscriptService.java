@@ -55,7 +55,7 @@ public class TranscriptService {
             String text = seg.path("text").asText("");
 
             ChatMessageDto dto = new ChatMessageDto();
-            dto.setUserId("temp");
+            dto.setUserId("123");
             dto.setName(speaker);
             dto.setMessage(text);
 
