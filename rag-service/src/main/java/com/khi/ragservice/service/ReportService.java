@@ -108,12 +108,17 @@ public class ReportService {
                 // selectedSpeaker가 "A"면 user1Id를, "B"면 user2Id를 로그인 유저 ID로 업데이트
                 if ("A".equals(selectedSpeaker)) {
                         entity.setUser1Id(userId);
-                        log.info("[ReportService] user1Id 업데이트 - reportId: {}, user1Id: {}", reportId, userId);
+                        entity.setUser1Name(loggedInUserName);
+                        entity.setUser2Name(requestDto.getOtherUserName());
+                        log.info("[ReportService] user1 업데이트 - reportId: {}, user1Id: {}, user1Name: {}, user2Name: {}",
+                                        reportId, userId, loggedInUserName, requestDto.getOtherUserName());
                 } else {
                         entity.setUser2Id(userId);
-                        log.info("[ReportService] user2Id 업데이트 - reportId: {}, user2Id: {}", reportId, userId);
+                        entity.setUser1Name(requestDto.getOtherUserName());
+                        entity.setUser2Name(loggedInUserName);
+                        log.info("[ReportService] user2 업데이트 - reportId: {}, user2Id: {}, user1Name: {}, user2Name: {}",
+                                        reportId, userId, requestDto.getOtherUserName(), loggedInUserName);
                 }
-
                 for (ChatMessageDto message : chatData) {
                         if (selectedSpeaker.equals(message.getName())) {
                                 // 로그인 유저가 선택한 화자 → Feign으로 가져온 실제 이름으로 변경
