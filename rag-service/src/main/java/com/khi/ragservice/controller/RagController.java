@@ -3,7 +3,6 @@ package com.khi.ragservice.controller;
 import com.khi.ragservice.dto.ChatRagRequestDto;
 import com.khi.ragservice.dto.InitializeReportRequestDto;
 import com.khi.ragservice.dto.RagRequestDto;
-import com.khi.ragservice.dto.ReportSummaryDto;
 import com.khi.ragservice.service.RagService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,12 +32,12 @@ public class RagController {
                 requestDto.getUser2Id(), requestDto.getUser2Name());
     }
 
-    @Operation(summary = "음성 텍스트를 수신하여 RAG 응답 생성 (Voice-Service 전용)", description = "Voice-Service, Chat-Service 등 다른 모듈에서 전달된 대화 텍스트를 바탕으로 감정 분석을 수행하고 RAG 응답을 반환.")
+    @Operation(summary = "음성 텍스트를 수신하여 RAG 응답 생성 (Voice-Service 전용)", description = "Voice-Service에서 전달된 대화 텍스트를 바탕으로 감정 분석을 수행. 즉시 반환됩니다.")
     @PostMapping("/feign/receive")
-    public ReportSummaryDto analyzeChatConversationWithVoice(@RequestBody RagRequestDto requestDto) {
+    public void analyzeChatConversationWithVoice(@RequestBody RagRequestDto requestDto) {
 
         log.info("[RagController] 응답 수신 user1Id: {}, user2Id: {}", requestDto.getUser1Id(), requestDto.getUser2Id());
-        return ragService.analyzeConversation(requestDto.getUser1Id(), requestDto.getUser2Id(),
+        ragService.analyzeConversation(requestDto.getUser1Id(), requestDto.getUser2Id(),
                 requestDto.getChatData());
     }
 
