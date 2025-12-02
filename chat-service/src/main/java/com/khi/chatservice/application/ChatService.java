@@ -341,6 +341,11 @@ public class ChatService {
 
         boolean exists = partRepo.findByRoomIdAndUserId(room.getId(), userId).isPresent();
         if (!exists) {
+            List<ChatRoomParticipantEntity> participants = partRepo.findByRoomId(room.getId());
+            if (participants.size() >= 2) {
+                throw new ApiException("채팅방이 꽉 찼습니다. (최대 2명)");
+            }
+
             partRepo.save(ChatRoomParticipantEntity.builder()
                     .room(room)
                     .userId(userId)
