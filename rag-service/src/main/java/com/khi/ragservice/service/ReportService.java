@@ -1,10 +1,14 @@
 package com.khi.ragservice.service;
 
+import com.khi.ragservice.client.UserProfileClient;
+import com.khi.ragservice.common.api.ApiResponse;
 import com.khi.ragservice.common.exception.ResourceNotFoundException;
 import com.khi.ragservice.dto.ChatMessageDto;
 import com.khi.ragservice.dto.ReportSummaryDto;
 import com.khi.ragservice.dto.ReportTitleDto;
 import com.khi.ragservice.dto.UpdateUserNameRequestDto;
+import com.khi.ragservice.dto.UserNicknameRequestDto;
+import com.khi.ragservice.dto.UserProfileResponseDto;
 import com.khi.ragservice.entity.ConversationReport;
 import com.khi.ragservice.repository.ConversationReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +26,7 @@ import java.util.List;
 public class ReportService {
 
         private final ConversationReportRepository conversationReportRepository;
+        private final UserProfileClient userProfileClient;
 
         public ReportSummaryDto getReportById(Long id) {
                 ConversationReport entity = conversationReportRepository.findById(id)
@@ -91,6 +96,14 @@ public class ReportService {
                                         "selectedSpeaker must be 'A' or 'B', but got: " + selectedSpeaker);
                 }
 
+                // Fetch logged-in user's nickname from security-service
+                log.info("[ReportService] Fetching user profile for userId: {}", userId);
+                UserNicknameRequestDto nicknameRequest = new UserNicknameRequestDto(userId);
+                ApiResponse<UserProfileResponseDto> userProfileResponse = userProfileClient
+                                .getUserNickname(nicknameRequest);
+                String loggedInUserName = userProfileResponse.getData().getNickname();
+                log.info("[ReportService] Fetched nickname: {}", loggedInUserName);
+
                 // 화자 기반 이름 및 userId 업데이트
                 // selectedSpeaker가 "A"면 user1Id를, "B"면 user2Id를 로그인 유저 ID로 업데이트
                 if ("A".equals(selectedSpeaker)) {
@@ -103,8 +116,8 @@ public class ReportService {
 
                 for (ChatMessageDto message : chatData) {
                         if (selectedSpeaker.equals(message.getName())) {
-                                // 로그인 유저가 선택한 화자 → 실제 이름으로 변경
-                                message.setName(requestDto.getLoggedInUserName());
+                                // 로그인 유저가 선택한 화자 → Feign으로 가져온 실제 이름으로 변경
+                                message.setName(loggedInUserName);
                         } else {
                                 // 나머지 화자 → 상대방 이름으로 변경
                                 message.setName(requestDto.getOtherUserName());
