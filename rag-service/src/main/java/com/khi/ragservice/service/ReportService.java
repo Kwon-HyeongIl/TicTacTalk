@@ -37,7 +37,8 @@ public class ReportService {
                                 entity.getReportCards(),
                                 entity.getCreatedAt(),
                                 entity.getState(),
-                                entity.getSourceType());
+                                entity.getSourceType(),
+                                entity.getIsNameUpdated());
         }
 
         public Page<ReportTitleDto> getUserReportTitles(String userId, Pageable pageable) {
@@ -79,7 +80,8 @@ public class ReportService {
                                         entity.getReportCards(),
                                         entity.getCreatedAt(),
                                         entity.getState(),
-                                        entity.getSourceType());
+                                        entity.getSourceType(),
+                                        entity.getIsNameUpdated());
                 }
 
                 // selectedSpeaker 검증
@@ -109,6 +111,9 @@ public class ReportService {
                         }
                 }
 
+                // Set isNameUpdated to true when updateUserName is called
+                entity.setIsNameUpdated(true);
+
                 ConversationReport savedEntity = conversationReportRepository.save(entity);
                 log.info("[ReportService] 이름 업데이트 완료 - reportId: {}", reportId);
 
@@ -123,6 +128,7 @@ public class ReportService {
                                 savedEntity.getReportCards(),
                                 savedEntity.getCreatedAt(),
                                 savedEntity.getState(),
-                                savedEntity.getSourceType());
+                                savedEntity.getSourceType(),
+                                savedEntity.getIsNameUpdated());
         }
 }

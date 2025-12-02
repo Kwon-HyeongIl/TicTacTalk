@@ -25,4 +25,5 @@ public class ReportSummaryDto {
     private LocalDateTime createdAt;
     private ReportState state;
     private SourceType sourceType;
+    private Boolean isNameUpdated;
 }
