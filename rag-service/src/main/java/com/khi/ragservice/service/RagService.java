@@ -246,7 +246,7 @@ public class RagService {
      * Chat-Service 전용: reportId를 지정하여 보고서 생성
      */
     @Transactional
-    public ReportSummaryDto analyzeConversationWithReportId(ChatRagRequestDto requestDto) {
+    public void analyzeConversationWithReportId(ChatRagRequestDto requestDto) {
 
         final int K = 3;
         final long t0 = System.nanoTime();
@@ -368,20 +368,6 @@ public class RagService {
             log.info("[RAG][CHAT] Saved entity details - id: {}, user1Id: '{}', user2Id: '{}', title: '{}', state: {}",
                     savedEntity.getId(), savedEntity.getUser1Id(), savedEntity.getUser2Id(),
                     savedEntity.getTitle(), savedEntity.getState());
-
-            return new ReportSummaryDto(
-                    savedEntity.getId(),
-                    savedEntity.getUser1Id(),
-                    savedEntity.getUser1Name(),
-                    savedEntity.getUser2Id(),
-                    savedEntity.getUser2Name(),
-                    savedEntity.getTitle(),
-                    savedEntity.getChatData(),
-                    savedEntity.getReportCards(),
-                    savedEntity.getCreatedAt(),
-                    savedEntity.getState(),
-                    savedEntity.getSourceType(),
-                    savedEntity.getIsNameUpdated());
 
         } catch (Exception e) {
             log.error("[RAG] error for reportId: {}", requestDto.getReportId(), e);
