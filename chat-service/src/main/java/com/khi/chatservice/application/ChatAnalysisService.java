@@ -48,6 +48,9 @@ public class ChatAnalysisService {
                 return;
             }
 
+            // userId 기준으로 정렬하여 항상 일관된 순서 보장
+            participants.sort(Comparator.comparing(ChatRoomParticipantEntity::getUserId));
+
             String user1Id = participants.get(0).getUserId();
             String user2Id = participants.get(1).getUserId();
 
