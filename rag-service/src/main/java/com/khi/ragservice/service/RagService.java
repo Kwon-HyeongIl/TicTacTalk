@@ -160,6 +160,7 @@ public class RagService {
                 existingReport.setReportCards(reportCards);
                 existingReport.setState(ReportState.COMPLETED);
                 existingReport.setSourceType(SourceType.VOICE);
+                existingReport.setIsNameUpdated(false);
 
                 log.info(
                         "[RAG][ANALYZE] Saving updated report with new title: '{}', chatData size: {}, reportCards size: {}",
@@ -183,6 +184,7 @@ public class RagService {
                 entity.setReportCards(reportCards);
                 entity.setState(ReportState.COMPLETED);
                 entity.setSourceType(SourceType.VOICE);
+                entity.setIsNameUpdated(false);
 
                 savedEntity = conversationReportRepository.save(entity);
 
@@ -205,7 +207,8 @@ public class RagService {
                     savedEntity.getReportCards(),
                     savedEntity.getCreatedAt(),
                     savedEntity.getState(),
-                    savedEntity.getSourceType());
+                    savedEntity.getSourceType(),
+                    savedEntity.getIsNameUpdated());
 
         } catch (Exception e) {
             log.error("[RAG] error", e);
@@ -317,7 +320,8 @@ public class RagService {
                     chatDataJson,
                     reportCardsJson,
                     ReportState.COMPLETED.name(),
-                    SourceType.CHAT.name());
+                    SourceType.CHAT.name(),
+                    true); // isNameUpdated = true for chat reports
 
             log.info("[RAG][CHAT] Upsert completed successfully");
 
@@ -343,7 +347,8 @@ public class RagService {
                     savedEntity.getReportCards(),
                     savedEntity.getCreatedAt(),
                     savedEntity.getState(),
-                    savedEntity.getSourceType());
+                    savedEntity.getSourceType(),
+                    savedEntity.getIsNameUpdated());
 
         } catch (Exception e) {
             log.error("[RAG] error for reportId: {}", requestDto.getReportId(), e);

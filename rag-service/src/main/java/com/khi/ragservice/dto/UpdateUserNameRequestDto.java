@@ -14,6 +14,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateUserNameRequestDto {
     private String selectedSpeaker; // "A" 또는 "B" - 로그인 유저가 선택한 화자
-    private String loggedInUserName; // 로그인 유저의 실제 이름
     private String otherUserName; // 상대방 이름
 }

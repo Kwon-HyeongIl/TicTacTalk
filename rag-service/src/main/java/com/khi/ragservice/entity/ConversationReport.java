@@ -56,6 +56,9 @@ public class ConversationReport {
     @Column(name = "source_type")
     private SourceType sourceType;
 
+    @Column(name = "is_name_updated", nullable = false)
+    private Boolean isNameUpdated = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

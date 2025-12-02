@@ -30,6 +30,9 @@ spring:
           max_completion_tokens: 12000
           temperature: 1
 
+security-service:
+  url: http://security-service.prod.svc.cluster.local:8080
+
 #eureka:
 #  client:
 #    enabled: false

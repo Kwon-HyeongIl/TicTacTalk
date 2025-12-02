@@ -1,5 +1,6 @@
 package com.khi.securityservice.core.service;
 
+import com.khi.securityservice.core.controller.dto.UserNicknameResponseDto;
 import com.khi.securityservice.core.controller.dto.UserProfileResponseDto;
 import com.khi.securityservice.core.entity.domain.UserEntity;
 import com.khi.securityservice.core.repository.UserRepository;
@@ -20,9 +21,11 @@ public class UserService {
         this.userRepository = userRepository;
         this.ncpStorageService = ncpStorageService;
     }
+
     // 유저 프로필 수정
     @Transactional
-    public UserProfileResponseDto updateUserProfile(String userId, String nickname, MultipartFile image, boolean isProfileImageDeleted) {
+    public UserProfileResponseDto updateUserProfile(String userId, String nickname, MultipartFile image,
+            boolean isProfileImageDeleted) {
         UserEntity user = userRepository.findOptionalByUid(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User Not found"));
 
@@ -52,6 +55,7 @@ public class UserService {
 
         return new UserProfileResponseDto(user);
     }
+
     // 유저 프로필 조회
     public UserProfileResponseDto getUserProfile(String userId) {
         UserEntity user = userRepository.findOptionalByUid(userId)
@@ -60,6 +64,16 @@ public class UserService {
 
         return new UserProfileResponseDto(user);
     }
+
+    // Feign 전용: 닉네임 조회
+    public UserNicknameResponseDto getUserNickname(String userId) {
+        UserEntity user = userRepository.findOptionalByUid(userId)
+                .orElseThrow(() -> new RuntimeException("User Not found"));
+        log.info("[SECURITY-SERVICE][FEIGN] userId: {} 닉네임 조회 - nickname: {}", userId, user.getNickname());
+
+        return new UserNicknameResponseDto(userId, user.getNickname());
+    }
+
     // 기존 프로필 이미지 Object Storage에서 삭제
     public void deleteCurrentProfileImage(UserEntity user) {
 
