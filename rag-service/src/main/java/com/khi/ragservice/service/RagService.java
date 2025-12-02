@@ -62,6 +62,32 @@ public class RagService {
                 savedEntity.getId(), savedEntity.getUser1Id(), savedEntity.getUser2Id(), savedEntity.getState());
     }
 
+    /**
+     * Chat-Service 전용: PENDING 상태의 빈 리포트를 생성 (별도 트랜잭션으로 즉시 커밋)
+     * REQUIRES_NEW를 사용하여 메인 트랜잭션과 분리, PENDING 상태를 즉시 DB에 반영
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void createPendingChatReport(Long reportId, String user1Id, String user1Name,
+            String user2Id, String user2Name) {
+        log.info("[RAG][CHAT][PENDING] ===== Creating PENDING report with new transaction =====");
+        log.info("[RAG][CHAT][PENDING] reportId: {}, user1Id: '{}', user2Id: '{}'", reportId, user1Id, user2Id);
+
+        conversationReportRepository.upsertReport(
+                reportId,
+                user1Id,
+                user1Name,
+                user2Id,
+                user2Name,
+                "생성 중...", // PENDING 상태의 제목
+                "[]", // 빈 chatData
+                "[]", // 빈 reportCards
+                ReportState.PENDING.name(),
+                SourceType.CHAT.name(),
+                false); // isNameUpdated = false
+
+        log.info("[RAG][CHAT][PENDING] ===== PENDING report committed to DB =====");
+    }
+
     @Transactional
     public ReportSummaryDto analyzeConversation(String user1Id, String user2Id, List<ChatMessageDto> chatMessages) {
         final int K = 3;
@@ -230,10 +256,7 @@ public class RagService {
                 requestDto.getChatData().size());
 
         try {
-            // 1. 우선 PENDING 상태의 빈 리포트 생성 (Voice-Service와 동일한 방식)
-            log.info("[RAG][CHAT] ===== Creating PENDING report first =====");
-
-            // user1Name, user2Name 추출 (chatData의 메시지에서)
+            // 1. user1Name, user2Name 추출 (chatData의 메시지에서)
             String user1Name = null;
             String user2Name = null;
             if (!requestDto.getChatData().isEmpty()) {
@@ -249,26 +272,13 @@ public class RagService {
                     }
                 }
             }
-            log.info("[RAG][CHAT] Extracted names for PENDING report - user1Name: '{}', user2Name: '{}'", user1Name,
-                    user2Name);
+            log.info("[RAG][CHAT] Extracted names - user1Name: '{}', user2Name: '{}'", user1Name, user2Name);
 
-            // PENDING 상태의 빈 리포트 생성
-            conversationReportRepository.upsertReport(
-                    requestDto.getReportId(),
-                    requestDto.getUser1Id(),
-                    user1Name,
-                    requestDto.getUser2Id(),
-                    user2Name,
-                    "생성 중...", // PENDING 상태의 제목
-                    "[]", // 빈 chatData
-                    "[]", // 빈 reportCards
-                    ReportState.PENDING.name(),
-                    SourceType.CHAT.name(),
-                    false); // isNameUpdated = false
+            // 2. PENDING 상태의 빈 리포트 생성 (별도 트랜잭션으로 즉시 커밋)
+            createPendingChatReport(requestDto.getReportId(), requestDto.getUser1Id(), user1Name,
+                    requestDto.getUser2Id(), user2Name);
 
-            log.info("[RAG][CHAT] PENDING report created with reportId: {}", requestDto.getReportId());
-
-            // 2. RAG 분석 시작
+            // 3. RAG 분석 시작
             ensureTrgmReady(dataSource);
 
             // Perform individual RAG search for each message
