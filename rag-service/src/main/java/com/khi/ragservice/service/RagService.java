@@ -11,6 +11,7 @@ import com.khi.ragservice.enums.SourceType;
 import com.khi.ragservice.repository.ConversationReportRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -244,7 +245,9 @@ public class RagService {
 
     /**
      * Chat-Service 전용: reportId를 지정하여 보고서 생성
+     * 비동기로 처리되므로 즉시 반환됩니다.
      */
+    @Async
     @Transactional
     public void analyzeConversationWithReportId(ChatRagRequestDto requestDto) {
 
@@ -370,8 +373,8 @@ public class RagService {
                     savedEntity.getTitle(), savedEntity.getState());
 
         } catch (Exception e) {
-            log.error("[RAG] error for reportId: {}", requestDto.getReportId(), e);
-            throw new RuntimeException("Failed to generate RAG response with reportId: " + requestDto.getReportId(), e);
+            log.error("[RAG][CHAT] Failed to generate RAG response for reportId: {}", requestDto.getReportId(), e);
+            // 비동기 메서드이므로 예외를 던지지 않고 로그만 남김
         }
     }
 

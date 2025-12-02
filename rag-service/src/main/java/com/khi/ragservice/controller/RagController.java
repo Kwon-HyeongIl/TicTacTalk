@@ -42,13 +42,12 @@ public class RagController {
                 requestDto.getChatData());
     }
 
-    @Operation(summary = "채팅 대화 분석 (Chat-Service 전용)", description = "Chat-Service 전용. reportId를 직접 지정하여 대화 분석 수행 및 보고서 생성.")
+    @Operation(summary = "채팅 대화 분석 (Chat-Service 전용)", description = "Chat-Service 전용. reportId를 직접 지정하여 대화 분석 수행 및 보고서 생성. 비동기로 처리되므로 즉시 반환됩니다.")
     @PostMapping("/feign/chat/analyze")
-    public Void analyzeChatConversationWithChat(@RequestBody ChatRagRequestDto requestDto) {
+    public void analyzeChatConversationWithChat(@RequestBody ChatRagRequestDto requestDto) {
 
         log.info("[RagController] 채팅 분석 요청 - reportId: {}, user1Id: {}, user2Id: {}",
                 requestDto.getReportId(), requestDto.getUser1Id(), requestDto.getUser2Id());
         ragService.analyzeConversationWithReportId(requestDto);
-        return null;
     }
 }
