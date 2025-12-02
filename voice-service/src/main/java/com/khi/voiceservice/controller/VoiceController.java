@@ -74,10 +74,7 @@ public class VoiceController {
             return ResponseEntity.internalServerError().build();
         }
         // Rag 분석 요청
-        ReportSummaryDto reportSummaryDto = ragClient.getRagResult(ragRequestDto);
-
-        // RagReportId와 Transcript 엔티티 매칭
-        transcriptService.matchTranscriptAndReport(clovaResultDto.getTranscript(), reportSummaryDto);
+        ragClient.getRagResult(ragRequestDto);
 
         return ResponseEntity.ok().build();
     }

@@ -2,7 +2,6 @@ package com.khi.voiceservice.client;
 
 import com.khi.voiceservice.dto.InitializeReportRequestDto;
 import com.khi.voiceservice.dto.RagRequestDto;
-import com.khi.voiceservice.dto.ReportSummaryDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,5 +13,5 @@ public interface RagClient {
     void initializeReport(@RequestBody InitializeReportRequestDto requestDto);
 
     @PostMapping("/rag/feign/receive")
-    ReportSummaryDto getRagResult(@RequestBody RagRequestDto requestDto);
+    void getRagResult(@RequestBody RagRequestDto requestDto);
 }
