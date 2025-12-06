@@ -1,0 +1,47 @@
+spring:
+  profiles:
+    active: local
+
+  application:
+    name: voice-service
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgres:5432/voice
+    username: root
+    password: ${DB-PASSWORD}
+
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+      show_sql: true
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+eureka:
+  client:
+    enabled: false
+
+ncp:
+  access-key: ${NCP-ACCESS-KEY}
+  secret-key: ${NCP-SECRET-KEY}
+  bucket-name: ttt-input
+
+clova:
+  speech:
+    secret-key: ${CLOVA-SECRET-KEY}
+    invoke-url: ${CLOVA-INVOKE-URL}
+    callback-url: ${CLOVA-CALLBACK-URL}
+
+rag-service:
+  url: http://rag-service.prod.svc.cluster.local:8080
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 600000

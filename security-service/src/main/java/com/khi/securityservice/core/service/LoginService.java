@@ -20,6 +20,7 @@ import java.util.Map;
 public class LoginService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final NicknameService nicknameService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -45,25 +46,30 @@ public class LoginService extends DefaultOAuth2UserService {
     private SecurityUserPrincipal kakaoOAuth2Process(OAuth2User authUser) {
 
         Map<String, Object> attributes = authUser.getAttributes();
-
         String authUid = attributes.get("id").toString();
 
         UserEntity existUser = userRepository.findByUid(authUid);
 
         // 회원가입
+        String nickname;
         if (existUser == null) {
+            nickname = nicknameService.generateRandomNickname();
 
             UserEntity userEntity = new UserEntity();
             userEntity.setUid(authUid);
             userEntity.setRole("ROLE_USER");
-
+            userEntity.setNickname(nickname);
+            userEntity.setProfileImgUrl(null);
             userRepository.save(userEntity);
 
             log.info("회원가입 완료");
+        } else {
+            nickname = existUser.getNickname();
         }
 
         SecurityUserPrincipalEntity userPrincipalEntity = new SecurityUserPrincipalEntity();
         userPrincipalEntity.setUid(authUid);
+        userPrincipalEntity.setNickname(nickname);
         userPrincipalEntity.setRole("ROLE_USER");
 
         return new SecurityUserPrincipal(userPrincipalEntity);

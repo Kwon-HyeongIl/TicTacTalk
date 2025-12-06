@@ -74,6 +74,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(HttpMethod.POST, "/security/join").permitAll()
                         .requestMatchers(HttpMethod.POST, "/security/jwt/reissue").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
 
                         /* Swagger */
                         .requestMatchers(HttpMethod.GET, "/swagger-ui/index.html").permitAll()
@@ -86,6 +87,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v3/api-docs").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/security/test").permitAll()
+
+                        /* API */
+                        .requestMatchers(HttpMethod.GET, "/security/user/profile").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/security/user/additional-info").permitAll()
+
+                        /* Internal Feign API for chat-service */
+                        .requestMatchers("/security/users/**").permitAll()
+                        .requestMatchers("/security/feign/user/nickname").permitAll()
+                        .requestMatchers("/security/user/*").permitAll()
 
                         .requestMatchers("/security/admin").hasRole("ADMIN")
 
