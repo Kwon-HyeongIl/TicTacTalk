@@ -33,6 +33,10 @@ spring:
 security-service:
   url: http://security-service.prod.svc.cluster.local:8080
 
+jwt:
+  secret: ${JWT-SECRET}
+
+
 #eureka:
 #  client:
 #    enabled: false
