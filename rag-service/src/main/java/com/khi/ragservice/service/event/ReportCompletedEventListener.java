@@ -22,6 +22,8 @@ public class ReportCompletedEventListener {
             phase = TransactionPhase.AFTER_COMMIT
     )
     public void onReportCompleted(ReportCompletedEvent event) {
+        log.info("[RAG WS] 리포트: {} 분석 완료 이벤트 확인", event.getReportId());
+
         Map<String, Object> payload = Map.of(
           "type","REPORT_COMPLETED",
           "reportId", event.getReportId()
@@ -34,7 +36,7 @@ public class ReportCompletedEventListener {
         );
 
         for (String userId : targets) {
-            log.info("[RAG WS] Send notify to userId = {}", userId);
+            log.info("[RAG WS] 수신 userId: {}", userId);
 
             messagingTemplate.convertAndSendToUser(
                     userId,
