@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -37,10 +38,17 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     }
 
     private String extractToken(ServerHttpRequest request) {
-        List<String> authHeaders = request.getHeaders().get("Authorization");
-        if (authHeaders == null || authHeaders.isEmpty()) return null;
+        URI uri = request.getURI();
+        String query = uri.getQuery();
 
-        String header = authHeaders.get(0);
-        return header.startsWith("Bearer ") ? header.substring(7) : null;
+        if (query == null) return null;
+
+        for (String param : query.split("&")) {
+            if (param.startsWith("token=")) {
+                return param.substring("token=".length());
+            }
+        }
+
+        return null;
     }
 }
