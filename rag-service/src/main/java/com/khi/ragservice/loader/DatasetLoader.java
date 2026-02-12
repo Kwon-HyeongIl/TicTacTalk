@@ -34,6 +34,7 @@ public class DatasetLoader implements CommandLineRunner {
     private static final boolean SEED_ENABLED = true;
     private static final String DATASET_DIR = "classpath:";
     private static final int LABEL_COUNT = 30;
+
     private static final boolean SKIP_IF_NOT_EMPTY = true;
     private static final boolean USE_FINGERPRINT = true;
     private static final boolean RESET_BEFORE_SEED = false;
@@ -106,7 +107,8 @@ public class DatasetLoader implements CommandLineRunner {
                     if (!arr.isArray())
                         throw new IllegalArgumentException("dataset is not a JSON array");
                     for (JsonNode node : arr) {
-                        total += processNode(node, batch);
+                        int added = processNode(node, batch);
+                        total += added;
                         if (batch.size() >= BATCH_SIZE)
                             flushBatch(batch);
                     }
@@ -118,7 +120,8 @@ public class DatasetLoader implements CommandLineRunner {
                         if (line.isEmpty())
                             continue;
                         JsonNode node = objectMapper.readTree(line);
-                        total += processNode(node, batch);
+                        int added = processNode(node, batch);
+                        total += added;
                         if (batch.size() >= BATCH_SIZE)
                             flushBatch(batch);
                     }
@@ -137,6 +140,7 @@ public class DatasetLoader implements CommandLineRunner {
         }
 
         log.info("[seed] JSON dataset load done. totalRecords={}", total);
+        log.info("===== RAG Service Ready for Requests =====");
     }
 
     private int processNode(JsonNode node, List<Document> batch) {
@@ -163,8 +167,9 @@ public class DatasetLoader implements CommandLineRunner {
 
     private void flushBatch(List<Document> batch) {
         try {
+            log.info("[seed] Generating embeddings and saving batch of {} records to Vector DB...", batch.size());
             vectorStore.add(batch);
-            log.info("[seed] inserted {} rows", batch.size());
+            log.info("[seed] Successfully stored {} records.", batch.size());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

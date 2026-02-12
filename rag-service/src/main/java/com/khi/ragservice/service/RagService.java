@@ -114,39 +114,11 @@ public class RagService {
 
         try {
 
-            // Perform individual RAG search for each message
-            List<Map<String, Object>> messagesWithRag = new ArrayList<>();
-            for (int i = 0; i < chatMessages.size(); i++) {
-                ChatMessageDto message = chatMessages.get(i);
-                log.info("[RAG] Processing message {}/{}: {}", i + 1, chatMessages.size(), message.getMessage());
-
-                List<Map<String, Object>> ragItems = searchRagForMessage(message.getMessage(), K);
-
-                // Log detailed RAG results for this message
-                log.info("[RAG] Message {}/{} - found {} RAG items for: \"{}\"",
-                        i + 1, chatMessages.size(), ragItems.size(), message.getMessage());
-                for (int j = 0; j < ragItems.size(); j++) {
-                    Map<String, Object> item = ragItems.get(j);
-                    log.info("[RAG]   Item {}: score={}, label={}, text={}",
-                            j + 1, item.get("score"), item.get("label"), item.get("text"));
-                }
-
-                Map<String, Object> messageWithRag = new LinkedHashMap<>();
-                messageWithRag.put("userId", message.getUserId());
-                messageWithRag.put("name", message.getName());
-                messageWithRag.put("message", message.getMessage());
-                messageWithRag.put("rag_items", ragItems);
-
-                messagesWithRag.add(messageWithRag);
-            }
+            Map<String, Object> gptInput = prepareRAGContext(user1Id, user2Id, chatMessages);
+            List<Map<String, Object>> messagesWithRag = (List<Map<String, Object>>) gptInput.get("messages_with_rag");
 
             long t1 = System.nanoTime();
             log.info("[RAG] done (vector) | messages={} | {} ms", chatMessages.size(), (t1 - t0) / 1_000_000);
-
-            Map<String, Object> gptInput = new LinkedHashMap<>();
-            gptInput.put("user1_id", user1Id);
-            gptInput.put("user2_id", user2Id);
-            gptInput.put("messages_with_rag", messagesWithRag);
 
             // Log RAG search results before sending to GPT
             log.info("[RAG] GPT Input - messages_with_rag: {}", messagesWithRag);
@@ -405,11 +377,13 @@ public class RagService {
         }
 
         // Spring AI VectorStore를 사용한 유사도 검색
+        log.info("[RAG] Requesting embedding generation and vector search for query: \"{}\"", messageText);
         List<Document> documents = vectorStore.similaritySearch(
                 SearchRequest.builder()
                         .query(messageText)
                         .topK(k)
                         .build());
+        log.info("[RAG] Vector search finished. Found {} documents for query: \"{}\"", documents.size(), messageText);
 
         List<Map<String, Object>> items = new ArrayList<>();
         for (Document doc : documents) {
@@ -423,5 +397,41 @@ public class RagService {
             items.add(m);
         }
         return items;
+    }
+
+    public Map<String, Object> prepareRAGContext(String user1Id, String user2Id, List<ChatMessageDto> chatMessages) {
+        final int K = 3;
+        List<Map<String, Object>> messagesWithRag = new ArrayList<>();
+
+        for (int i = 0; i < chatMessages.size(); i++) {
+            ChatMessageDto message = chatMessages.get(i);
+            log.info("[RAG] Processing message {}/{}: {}", i + 1, chatMessages.size(), message.getMessage());
+
+            List<Map<String, Object>> ragItems = searchRagForMessage(message.getMessage(), K);
+
+            // Log detailed RAG results for this message
+            log.info("[RAG] Message {}/{} - found {} RAG items for: \"{}\"",
+                    i + 1, chatMessages.size(), ragItems.size(), message.getMessage());
+            for (int j = 0; j < ragItems.size(); j++) {
+                Map<String, Object> item = ragItems.get(j);
+                log.info("[RAG]   Item {}: score={}, label={}, text={}",
+                        j + 1, item.get("score"), item.get("label"), item.get("text"));
+            }
+
+            Map<String, Object> messageWithRag = new LinkedHashMap<>();
+            messageWithRag.put("userId", message.getUserId());
+            messageWithRag.put("name", message.getName());
+            messageWithRag.put("message", message.getMessage());
+            messageWithRag.put("rag_items", ragItems);
+
+            messagesWithRag.add(messageWithRag);
+        }
+
+        Map<String, Object> gptInput = new LinkedHashMap<>();
+        gptInput.put("user1_id", user1Id);
+        gptInput.put("user2_id", user2Id);
+        gptInput.put("messages_with_rag", messagesWithRag);
+
+        return gptInput;
     }
 }

@@ -1,47 +1,45 @@
-# spring:
-#   profiles:
-#     active: local
+spring:
+  profiles:
+    active: local
+  application:
+    name: rag-service
 
-#   application:
-#     name: rag-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgres:5432/rag
+    username: root
+    password: ${DB-PASSWORD}
 
-#   datasource:
-#     driver-class-name: org.postgresql.Driver
-#     url: jdbc:postgresql://postgres:5432/rag
-#     username: root
-#     password: ${DB-PASSWORD}
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+      show_sql: true
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 
-#   jpa:
-#     database: postgresql
-#     database-platform: org.hibernate.dialect.PostgreSQLDialect
-#     generate-ddl: true
-#     hibernate:
-#       ddl-auto: update
-#       show_sql: true
-#       naming:
-#         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  ai:
+    openai:
+      api-key: ${OPENAI-API-KEY}
+      chat:
+        options:
+          model: gpt-5-mini
+          max_completion_tokens: 12000
+          temperature: 1
+      embedding:
+        options:
+          model: text-embedding-3-small
 
-#   ai:
-#     openai:
-#       api-key: ${OPENAI-API-KEY}
-#       chat:
-#         options:
-#           model: gpt-5-mini
-#           max_completion_tokens: 12000
-#           temperature: 1
-#       embedding:
-#         options:
-#           model: text-embedding-3-small
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 1536
 
-#     vectorstore:
-#       pgvector:
-#         index-type: HNSW
-#         distance-type: COSINE_DISTANCE
-#         dimensions: 1536
+security-service:
+  url: http://security-service.prod.svc.cluster.local:8080
 
-# security-service:
-#   url: http://security-service.prod.svc.cluster.local:8080
-
-# jwt:
-#   secret: ${JWT-SECRET}
-
+jwt:
+  secret: ${JWT-SECRET}
